@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>慢SQL执行时间统计图</title>
+    <script src="./static/js/echarts.common.min.js"></script>
+    <script src="./static/js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+$(document).ready(function () {
+    if(location.href.indexOf("#reloaded")==-1){ 
+    	location.href=location.href+"#reloaded"; 
+    	location.reload(); 
+    } 
+})
+</script>
+    <div id="main" style="height:400px"></div>
+<script type="text/javascript">
+var  myChart = echarts.init(document.getElementById('main'));
+var arr1=[],arr2=[];
+
+<?php
+$sql = <<<EOF
+SELECT
+    ts_max,
+    Query_time_max
+FROM
+    mysql_slow_query_review_history
+WHERE
+    db_max = 'xxx'
+AND ts_max >= DATE_FORMAT(
+    DATE_SUB(NOW(), INTERVAL 1 DAY),
+    '%Y-%m-%d'
+)
+EOF;
+    $data="";
+    $array=array();
+
+    class User{
+        public $ts_max;
+        public $Query_time_max;
+    }
+    $stmt = $pdo->query($sql);
+    $top = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($top as $k => $r) {
+        $user=new User();
+        $user->ts_max = $r['ts_max'];
+        $user->Query_time_max = $r['Query_time_max'];
+        $array[]=$user;
+    }
+
+    $data=json_encode($array);
+?>
+var result = <?php echo $data;?>;
+for (var i = 0; i < result.length; i++) {
+    arr1.push(result[i].ts_max);
+    arr2.push(result[i].Query_time_max);
+}
+var  option = {
+        title: {
+        text: '慢查询分析',
+    },
+    tooltip: {
+        trigger: 'axis'
+    },
+    legend: {
+        data:['慢SQL执行时间']
+    },
+    xAxis : [
+        {
+            type : 'category',
+            data : arr1
+        }
+    ],
+    yAxis : [
+        {
+            type : 'value',
+            axisLabel: {
+                formatter:'{value}(秒)'
+            }
+        }
+    ],
+    dataZoom: [
+        {   
+            type: 'slider', 
+            start: 100,      
+            end: 80         
+        }
+    ],
+    series : [
+        {
+            "name":"慢SQL执行时间",
+            "type":"line",
+            "smooth": "true",
+            "data":arr2,
+            stack: '秒',
+            areaStyle: {
+                normal: {
+                    color: '#8cd5c2' //改变区域颜色
+                }	
+            },
+            itemStyle : {
+                normal : { 
+                    color:'#8cd5c2',
+                    lineStyle: {
+                        color: '#3300FF',
+                        width: 3,
+                    }
+                }
+            }
+        }
+    ]
+};
+myChart.setOption(option);
+</script>
+</body>

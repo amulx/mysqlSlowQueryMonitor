@@ -1,0 +1,113 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>慢SQL执行时间统计图</title>
+    <script src="./static/js/echarts.common.min.js"></script>
+    <script src="./static/js/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <div id="main" style="height:400px"></div>
+<script type="text/javascript">
+<?php
+    $sql = <<<EOF
+SELECT
+    db_max,
+    user_max,
+    SUM(ts_cnt) AS top_count
+FROM
+    (
+        SELECT
+            h.db_max,
+            h.user_max,
+            SUM(h.ts_cnt) AS ts_cnt
+        FROM
+            mysql_slow_query_review AS r
+        JOIN mysql_slow_query_review_history AS h ON r. CHECKSUM = h. CHECKSUM
+        WHERE
+            r.last_seen >= SUBDATE(NOW(), INTERVAL 14 DAY)
+        GROUP BY
+            r. CHECKSUM
+    ) AS tmp
+GROUP BY
+    tmp.db_max
+EOF;
+
+    $top_data="";
+    $array= array();
+
+    class User{
+        public $db_max;
+        public $top_count;
+    }
+
+    $stmt = $pdo->query($sql);
+    $top = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($top as $k => $r) {
+        $user=new User();
+        $user->db_max = $r['db_max'];
+        $user->top_count = $r['top_count'];
+        $array[]=$user;
+    }
+    $top_data=json_encode($array);
+?>
+
+var result = <?php echo $top_data;?>;
+var arr1=[],arr2=[];
+for (var i = 0; i < result.length; i++) {
+    arr1.push(result[i].ts_max);
+    arr2.push(result[i].Query_time_max);
+}
+
+var  myChart = echarts.init(document.getElementById('main'));
+var arr1=[],arr2=[];
+var option = {
+        title: {
+        text: '一个迭代慢查询数量龙虎榜TOP排名',
+    },
+    tooltip: {
+        trigger: 'axis'
+    },
+    legend: {
+        data:['数量']
+    },
+    xAxis : [
+        {
+            type : 'category',
+            data : arr1
+        }
+    ],
+    yAxis : [
+        {
+            type : 'value',
+            axisLabel: {
+                formatter:'{value}(个)'
+            }
+        }
+    ],
+    series : [{
+            "name":"数量",
+            "type":"bar",
+            "smooth": "true",
+            "data": arr2,
+            stack: '数量',
+            areaStyle: {
+                normal: {
+                    color: '#8cd5c2' //改变区域颜色
+                }	
+            },
+            itemStyle : {
+                normal : { 
+                    color:'#8cd5c2',
+                    lineStyle: {
+                    	color: '#3300FF',
+                    	width: 3,
+                    }
+                }
+            }
+        }
+    ]
+};
+myChart.setOption(option);
+</script>
+</body>
