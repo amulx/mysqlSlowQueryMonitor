@@ -41,3 +41,9 @@ tar zxf percona-toolkit.tar.gz
 cd percona-toolkit-2.2.19
 perl Makefile.PL PREFIX=/usr/local/percona-toolkit
 make && make install
+
+
+======  我安装的依赖 =====
+sudo yum install perl-DBI
+sudo yum install perl-DBD-MySQL
+sudo yum -y install perl-Digest-MD5
