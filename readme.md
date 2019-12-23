@@ -4,7 +4,7 @@
 
 [下载地址](https://www.percona.com/downloads/percona-toolkit/LATEST/)
 
-![1576919154402](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\1576919154402.png)
+![1576919154402](https://github.com/amulx/mysqlSlowQueryMonitor/blob/master/static/1576919154402.png?raw=true)
 
 安装依赖以及常见安装过程中出现的问题：
 
@@ -130,7 +130,7 @@ chmod a+x soar
 
 [下载地址](https://dev.mysql.com/downloads/mysql/)
 
-![1576936530224](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\1576936530224.png)
+![1576936530224](https://github.com/amulx/mysqlSlowQueryMonitor/blob/master/static/1576936530224.png?raw=true)
 
 ```shell
 # 创建普通用户，不能登录系统  useradd -s /sbin/nologin -M mysql
@@ -209,7 +209,7 @@ $pt_query_digest = '';
 
 ### 2、设置定时任务
 
-![](.\static\crond.png)
+![](https://github.com/amulx/mysqlSlowQueryMonitor/blob/master/static/crond.png?raw=true)
 
 ```shell
 crontab -e
@@ -221,4 +221,4 @@ sudo systemctl restart crond
 
 `check.php`为环境检测文件，可在浏览器中访问该路径，查看当前服务器环境是否已满足运行要求。
 
-### 4、
+### 4、访问首页
